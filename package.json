@@ -1,0 +1,15 @@
+{
+  "name": "usbtronica",
+  "version": "0.0.1",
+  "description": "simple synth and hw connectivity",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lars Knudsen",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "@types/web-bluetooth": "0.0.4",
+    "lit-html": "^0.9.0",
+    "lit-html-element": "^0.9.1"
+  }
+}
