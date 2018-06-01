@@ -3,12 +3,13 @@ import {html, LitElement} from '../modules/lit-html-element/lit-element.js';
 import {repeat} from '../modules/lit-html/lib/repeat.js';
 // import {getBLEThingy52} from './ble-thingy52.js';
 import {MatButton} from '../local_modules/mat-button/mat-button.js';
-import {RecordingVisualizer} from '../local_modules/recording-visualizer/recording-visualizer.js';
 import {SampleVisualizer} from '../local_modules/sample-visualizer/sample-visualizer.js';
 
 import {AudioUtils} from '../local_modules/audio-utils/audio-utils.js';
 
 import {Controllers} from '../local_modules/instrument-control/instrument-control.js';
+import { MIDI_MSG_TYPE_NAME, MIDI_MSG_TYPE } from '../local_modules/instrument-control/defs.js';
+import { ControllerSettings } from '../local_modules/controller-settings/controller-settings.js';
 
 
 export class MainApp extends LitElement {
@@ -17,27 +18,44 @@ export class MainApp extends LitElement {
     super();
     this._devices = [];
 
+    this._notes = [];
+
     this._onTemperatureChange = this._onTemperatureChange.bind(this);
     this._onAccelChange = this._onAccelChange.bind(this);
     this._onButtonChange = this._onButtonChange.bind(this);
     this._loadSound = this._loadSound.bind(this);
     this._recordToggle = this._recordToggle.bind(this);
+    this._playRecording = this._playRecording.bind(this);
+
+    this.playEffectNote = this.playEffectNote.bind(this);
+    this.stopNote = this.stopNote.bind(this);
 
     // getBLEThingy52().addEventListener('message', (msg) => { console.log(msg.detail) });
     // getBLEThingy52().addEventListener('connect', this._handleConnect.bind(this));
+
+    const toneDiff = Math.pow(2, 1/12);
+
     for(let [type, controller] of Controllers) {
       console.log('Controller registered:', type);
       controller.addEventListener('connect', (e) => console.log('connect', e.detail));
-      controller.addEventListener('midi-event', (e) => console.log('midi-event', e.detail.data));
+      controller.addEventListener('midi-event', (e) => {
+        const msg = e.detail.data;
+        console.log('midi-event', MIDI_MSG_TYPE_NAME[msg.type], msg);
+        
+        if(msg.type === MIDI_MSG_TYPE.NOTE_ON) {
+          this.playEffectNote(Math.pow(toneDiff, msg.note-60), msg.note);
+        } else if(msg.type === MIDI_MSG_TYPE.NOTE_OFF) {
+          this.stopNote(msg.note);
+        }
+      });
     }
 
     requestAnimationFrame(this.initialize.bind(this));
   }
 
   initialize() {
-    this._initRecording();
+    //this._initRecording();
 
-    this._audioCtx = new (AudioContext || webkitAudioContext)();
     this._recording = this.$('recording');
   }
 
@@ -92,6 +110,52 @@ export class MainApp extends LitElement {
     }
   }
 
+  _onMIDIMessage(data) {
+    const toneDiff = Math.pow(2, 1/12);
+    console.log(data);
+    switch(data[0]) {
+    case 144:
+        if(data[2] > 0) {
+            this.playEffectNote('sample',Math.pow(toneDiff, data[1]-60), data[1]);
+        } else {
+            this.stopNote(data[1]);
+        }
+        break;
+    // case 0xE0: // 224 = pitch bend
+    //     WindMIDIService._fireEvent({
+    //         type: "pitch",
+    //         value: data[1] + (data[2] << 7)
+    //     });
+    //     break;
+    // case 0xD0: // 208 = pressure/after-touch
+    //     WindMIDIService._fireEvent({
+    //         type: "pressure",
+    //         value: data[1]
+    //     });
+    //     break;
+
+    }
+  }
+
+  playEffectNote(rate, note) {
+    const aCtx = AudioUtils.ctx;
+    const src = aCtx.createBufferSource();
+    if(rate) {
+      src.playbackRate.value = rate;
+    }
+    src.buffer = this.lastRecording;
+    src.connect(aCtx.destination);
+    src.start(0);
+    this._notes[note] = src;
+  }
+
+  stopNote(note) {
+      let src = this._notes[note];
+      if(src) {
+          src.stop();
+      }
+  }
+
   get lastRecording() {
     return this._lastRecording;
   }
@@ -102,10 +166,11 @@ export class MainApp extends LitElement {
   }
 
   _convertSampleBlob(blob) {
+    const aCtx = AudioUtils.ctx;
     var reader = new FileReader();
     reader.onload = () => {
         console.log(reader.result);
-        this._audioCtx.decodeAudioData(reader.result, buffer => {
+        aCtx.decodeAudioData(reader.result, buffer => {
             this.lastRecording = buffer;
             console.log(buffer);
         });
@@ -114,10 +179,11 @@ export class MainApp extends LitElement {
   }
 
   _visualize(stream) {
+    const aCtx = AudioUtils.ctx;
 
-    let source = this._audioCtx.createMediaStreamSource(stream);
+    let source = aCtx.createMediaStreamSource(stream);
 
-    let analyser = this._audioCtx.createAnalyser();
+    let analyser = aCtx.createAnalyser();
     analyser.fftSize = 2048;
     let dataArray = new Float32Array(analyser.fftSize);
 
@@ -207,10 +273,12 @@ export class MainApp extends LitElement {
       </style>
       <h1>usBTronica</h1>
       <br>
-      <recording-visualizer id='recording' class="ccc" on-click='${ this._recordToggle }}'></recording-visualizer>
-      <sample-visualizer class="aaa" on-click='${ this._loadSound }}'>AAA</sample-visualizer>
-      <sample-visualizer id="lastRec" class="bbb">BBB</sample-visualizer>
-      <sample-visualizer class="ccc" on-click='${ this._loadSound }}'>CCC</sample-visualizer><br>
+      <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
+      <controller-settings></controller-settings>
+      <sample-visualizer id='recording' class="ccc" on-click='${ this._recordToggle }}'></sample-visualizer>
+      <sample-visualizer class="aaa" on-click='${ this._loadSound }'>AAA</sample-visualizer>
+      <sample-visualizer id="lastRec" on-click='${ this._playRecording }'class="bbb"></sample-visualizer>
+      <sample-visualizer class="ccc" on-click='${ this._loadSound }'>CCC</sample-visualizer><br>
       <mat-button on-click='${ _ => this._scan()}'>CONNECT <b>THINGY:52</b></mat-button>
       <br><br>
       <p>
@@ -220,13 +288,26 @@ export class MainApp extends LitElement {
     `;
   }
 
+  _enableAudio() {
+    const aCtx = AudioUtils.ctx;
+    this._initRecording();
+    // this could just be part of a splash screen or other natural element the user clicks anyway
+  }
+
   _loadSound(evt) {
     this.loadEffect('./assets/audio/test.ogg', evt.target);
   }
 
+  _playRecording() {
+    const aCtx = AudioUtils.ctx;
+    const src = aCtx.createBufferSource();
+    src.buffer = this.lastRecording;
+    src.connect(aCtx.destination);
+    src.start(0);
+  }
 
   loadEffect(url, target) {
-    const aCtx = AudioUtils.audioContext;
+    const aCtx = AudioUtils.ctx;
 
     const src = aCtx.createBufferSource();
 
@@ -365,4 +446,4 @@ export class MainApp extends LitElement {
   }
 }
 
-customElements.define('main-app', MainApp.withProperties());
+customElements.define('main-app', MainApp);

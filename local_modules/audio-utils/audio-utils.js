@@ -2,8 +2,14 @@
 class _AudioUtils extends EventTarget {
     constructor() {
         super();
+    }
 
-        this.audioContext = new AudioContext();
+    get ctx() {
+        if(!this._audioCtx) {
+          this._audioCtx = new (AudioContext || webkitAudioContext)();
+        }
+
+        return this._audioCtx;
     }
 }
 

@@ -5,7 +5,8 @@
 // Output (MIDI mapped):
 //   key on/off => note on/off (fixed volume?) around note 60
 
-import {BaseControl} from './base-control.js'
+import { BaseControl } from './base-control.js'
+import { MIDI_MSG_TYPE } from './defs.js';
 
 export class KeyboardControl extends BaseControl {
     constructor() {
@@ -17,6 +18,8 @@ export class KeyboardControl extends BaseControl {
         this._channel = 0;  // channels: 1 - 16 (but we zero index ;))
 
         this._deviceId = 0;  // assuming one computer keyboard present
+
+        this.devices.push(this._deviceId);
 
         window.setTimeout(() => {this.initialize()}, 0);
     }
@@ -53,7 +56,9 @@ export class KeyboardControl extends BaseControl {
             if(!evt.repeat) {
               const note = _KEY_NOTE[evt.code];
               if(note !== undefined) {
-                this.emitControlEvent(this._deviceId, {type: this.NOTE_ON, channel: this._channel, note: note, velocity: this.MAX_VELOCITY}); 
+                this.emitControlEvent(this._deviceId, {type: MIDI_MSG_TYPE.NOTE_ON, channel: this._channel, note: note, velocity: this.MAX_VELOCITY}); 
+              } else {
+                console.log('pressed: ', evt.code);
               }
             //   else if(evt.code === 'KeyS') {
             //     if(!this.$.record.disabled)
@@ -66,7 +71,7 @@ export class KeyboardControl extends BaseControl {
             if(!evt.repeat) {
               const note = _KEY_NOTE[evt.code];
               if(note !== undefined) {
-                this.emitControlEvent(this._deviceId, {type: this.NOTE_OFF, channel: this._channel, note: note, velocity: this.MAX_VELOCITY}); 
+                this.emitControlEvent(this._deviceId, {type: MIDI_MSG_TYPE.NOTE_OFF, channel: this._channel, note: note, velocity: this.MAX_VELOCITY}); 
               }
             }
           });

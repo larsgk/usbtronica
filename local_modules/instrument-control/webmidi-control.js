@@ -4,7 +4,8 @@
 // Output:
 //   MIDI as received
 
-import {BaseControl} from './base-control.js'
+import { BaseControl } from './base-control.js'
+import { MIDI_MSG_TYPE } from './defs.js';
 
 export class WebMIDIControl extends BaseControl {
     constructor() {
@@ -62,17 +63,17 @@ export class WebMIDIControl extends BaseControl {
             result.channel = result.type != 0xf0 ? msg[0] & 0x0f : undefined;
             
             switch(result.type) {
-                case this.NOTE_ON:
-                case this.NOTE_OFF:
-                case this.KEY_PRESSURE:
+                case MIDI_MSG_TYPE.NOTE_ON:
+                case MIDI_MSG_TYPE.NOTE_OFF:
+                case MIDI_MSG_TYPE.KEY_PRESSURE:
                     result.note = msg[1];
                     result.velocity = msg[2];
                     break;
-                case this.CONTROL_CHANGE:
+                case MIDI_MSG_TYPE.CONTROL_CHANGE:
                     result.control = msg[1];
                     result.value = msg[2];
                     break;
-                case this.PITCH_BEND_CHANGE:
+                case MIDI_MSG_TYPE.PITCH_BEND_CHANGE:
                     result.value = (msg[2] << 7) + msg[1];
                 default:
                     break;

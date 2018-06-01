@@ -28,7 +28,6 @@ export class SampleVisualizer extends LitElement {
 
   _initialize() {
     // console.log("initialize");
-
     this.canvas = this.$("viz");
 
     // grab colors
@@ -54,19 +53,17 @@ export class SampleVisualizer extends LitElement {
     ro.observe(this);
   }
 
-  // _resizeCanvas() {
-  //   const rect = this.getBoundingClientRect();
-  // }
-
   _prepData() {
-    if(!(this._data instanceof AudioBuffer)) {
+    if(this._data instanceof AudioBuffer) {
+      this._renderData = this._data.getChannelData(0);
+    } else if(this._data instanceof Float32Array) {
+      this._renderData = this._data;
+    } else {
       this._renderData = null;
       this._renderDataMax = 0;
       this._renderDataMin = 0;
       return;
     }
-
-    this._renderData = this._data.getChannelData(0);
 
     // TODO: test if it has a valid length...
 
@@ -83,24 +80,44 @@ export class SampleVisualizer extends LitElement {
 
     ctx.strokeStyle = this.lineColor;
     const cy = this._height / 2;
-    const amp = cy - 5; // don't draw outside the box
+    const amp = cy; // don't draw outside the box
 
     if(this._renderData) {
-      const step = Math.ceil(this._renderData.length / this._width);
-
-      ctx.fillStyle = this.lineColor;
-
-      for(let i=0; i < this._width; i++){
-        let min = 1.0;
-        let max = -1.0;
-        for (let j=0; j<step; j++) {
-            const datum = this._renderData[(i*step)+j]; 
-            if (datum < min)
-                min = datum;
-            if (datum > max)
-                max = datum;
+      if(this._renderData.length < this._width * 4) {
+        const step = this._width / this._renderData.length;
+        let x = 0;
+  
+        ctx.strokeStyle = this.lineColor;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+  
+        for(let val of this._renderData) {
+          if(x === 0) {
+            ctx.moveTo(x, cy - amp * val);
+          } else {
+            ctx.lineTo(x, cy - amp * val); 
+          }
+          x += step;
         }
-        ctx.fillRect(i,(1+min)*amp,1,Math.max(1,(max-min)*amp));
+  
+        ctx.stroke();  
+      } else {
+        const step = Math.floor(this._renderData.length / this._width);
+
+        ctx.fillStyle = this.lineColor;
+  
+        for(let i=0; i < this._width; i++){
+          let min = 1.0;
+          let max = -1.0;
+          for (let j=0; j<step; j++) {
+              const datum = this._renderData[(i*step)+j]; 
+              if (datum < min)
+                  min = datum;
+              if (datum > max)
+                  max = datum;
+          }
+          ctx.fillRect(i,(1+min)*amp,1,Math.max(1,(max-min)*amp));
+        }  
       }
     }
   }
@@ -111,7 +128,6 @@ export class SampleVisualizer extends LitElement {
         :host {
           display: block;
           margin: 0;
-          background: rgba(255,0,0,0.3);
           -webkit-user-select: none;
           -moz-user-select: none;
           user-select: none;
@@ -120,6 +136,7 @@ export class SampleVisualizer extends LitElement {
         canvas {
           display: block;
           margin:0;
+          border-radius: 15px;
         }
       </style>
       <canvas id="viz" width="${this._width}" height="${this._height}"></canvas>
