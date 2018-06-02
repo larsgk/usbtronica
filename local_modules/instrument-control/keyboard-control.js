@@ -52,7 +52,7 @@ export class KeyboardControl extends BaseControl {
   
           // setup key bindings
           document.addEventListener('keydown', evt => {
-            const toneDiff = Math.pow(2, 1/12);
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=843558#c6
             if(!evt.repeat) {
               const note = _KEY_NOTE[evt.code];
               if(note !== undefined) {
@@ -65,6 +65,7 @@ export class KeyboardControl extends BaseControl {
             //       this._recordToggle();
             //   }
             }
+            //evt.preventDefault();
           });
   
           document.addEventListener('keyup', evt => {

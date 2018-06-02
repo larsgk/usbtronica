@@ -53,6 +53,14 @@ export class MainApp extends LitElement {
     requestAnimationFrame(this.initialize.bind(this));
   }
 
+  static get properties() {
+    return {
+      isRecording: {
+        type: Boolean
+      }
+    }
+  }
+
   initialize() {
     //this._initRecording();
 
@@ -107,33 +115,6 @@ export class MainApp extends LitElement {
         this.mediaRecorder.start();
         this.isRecording = true;
       }
-    }
-  }
-
-  _onMIDIMessage(data) {
-    const toneDiff = Math.pow(2, 1/12);
-    console.log(data);
-    switch(data[0]) {
-    case 144:
-        if(data[2] > 0) {
-            this.playEffectNote('sample',Math.pow(toneDiff, data[1]-60), data[1]);
-        } else {
-            this.stopNote(data[1]);
-        }
-        break;
-    // case 0xE0: // 224 = pitch bend
-    //     WindMIDIService._fireEvent({
-    //         type: "pitch",
-    //         value: data[1] + (data[2] << 7)
-    //     });
-    //     break;
-    // case 0xD0: // 208 = pressure/after-touch
-    //     WindMIDIService._fireEvent({
-    //         type: "pressure",
-    //         value: data[1]
-    //     });
-    //     break;
-
     }
   }
 
@@ -208,36 +189,6 @@ export class MainApp extends LitElement {
     }
   }
 
-  _renderDeviceInfo() {
-    if (!this._devices.length) {
-      return "N/A";
-    }
-
-    return html`
-      ${this._devices.map(d => {
-        const dataArr = Object.keys(d.data);
-        return html`
-          ${d.device.name}
-          <mat-button class="mini-button" on-click='${e => this._detachDevice(d.device)}'>
-            DISCONNECT
-          </mat-button>:
-          <br>
-          <ul>
-            ${
-              repeat(dataArr, (i) => i, (i, idx) => {
-                let value = d.data[i];
-                if (typeof(value) === "object") {
-                  value = JSON.stringify(value);
-                }
-                return html`<li>${i}: ${value}</li>`
-              })
-            }
-          </ul>
-        `
-      })}
-    `;
-  }
-
   render() {
     return html`
       <style>
@@ -274,18 +225,23 @@ export class MainApp extends LitElement {
       <h1>usBTronica</h1>
       <br>
       <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
+      <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
+      <mat-button on-click='${ _ => this._doScanForDevices()}'>Scan for devices</mat-button>
       <controller-settings></controller-settings>
-      <sample-visualizer id='recording' class="ccc" on-click='${ this._recordToggle }}'></sample-visualizer>
+      <sample-visualizer id='recording' class="ccc"></sample-visualizer>
       <sample-visualizer class="aaa" on-click='${ this._loadSound }'>AAA</sample-visualizer>
       <sample-visualizer id="lastRec" on-click='${ this._playRecording }'class="bbb"></sample-visualizer>
       <sample-visualizer class="ccc" on-click='${ this._loadSound }'>CCC</sample-visualizer><br>
-      <mat-button on-click='${ _ => this._scan()}'>CONNECT <b>THINGY:52</b></mat-button>
-      <br><br>
-      <p>
-        <h2 class="title">Devices:</h2><br>
-        ${this._renderDeviceInfo()}
-      </p>
     `;
+  }
+
+  _doScanForDevices() {
+    for(let [type, controller] of Controllers) {
+      if(controller.scan) {
+        controller.scan();
+      }
+    }
+    
   }
 
   _enableAudio() {
@@ -324,126 +280,6 @@ export class MainApp extends LitElement {
       });
     });
   }
-
-
-
-  // When the GATT server is disconnected, remove the device from the list
-  _deviceDisconnected(device) {
-    console.log('Disconnected', device);
-    const idx = this._devices.findIndex(dev => dev.device === device);
-
-    if (idx >= 0) {
-      this._devices.splice(idx, 1)
-      this.invalidate();
-    }
-  }
-
-  // Characteristic notification handlers
-  _onTemperatureChange(event) {
-    const target = event.target;
-    const idx = this._devices.findIndex(dev => dev.device === target.service.device);
-    if (idx < 0) {
-      return;
-    }
-
-    const integer = target.value.getUint8(0);
-    const decimal = target.value.getUint8(1);
-
-    this._devices[idx].data.temperature = `${integer}.${decimal}°C`;
-    this.invalidate();
-  }
-
-  _onAccelChange(event) {
-    const target = event.target;
-    const idx = this._devices.findIndex(dev => dev.device === target.service.device);
-    if (idx < 0) {
-      return;
-    }
-
-    this._devices[idx].data.accel = {
-      x: +target.value.getFloat32(0, true).toPrecision(5),
-      y: +target.value.getFloat32(4, true).toPrecision(5),
-      z: +target.value.getFloat32(8, true).toPrecision(5)
-    };
-
-    this.invalidate();
-  }
-
-  _onButtonChange(event) {
-    const target = event.target;
-    const idx = this._devices.findIndex(dev => dev.device === target.service.device);
-    if (idx < 0) {
-      return;
-    }
-
-    const device = this._devices[idx];
-    const button = device.data.button = target.value.getUint8(0) === 1;
-
-    // set led color to red or green based on button pressed state
-    if (device.led) {
-      const hexToRGB = hex => hex.match(/[A-Za-z0-9]{2}/g).map(v => parseInt(v, 16));
-      const color = hexToRGB(button ? '#ff0000' : '#00ff00');
-      return device.led.writeValue(new Uint8Array([1, ...color]));
-    }
-  }
-
-  // If successful, adds the Thingy:52 to this._devices array
-  async _attachDevice(device) {
-    // Check that device is not already connected
-    if (this._devices.findIndex(dev => dev.device.id === device.id) >= 0) {
-      console.log('Device already connected!');
-      return;
-    }
-
-    const server = await device.gatt.connect();
-
-    await this._startTemperatureNotifications(server);
-    await this._startAccelerometerNotifications(server);
-    await this._startButtonClickNotifications(server);
-
-    const led = await this._getLedCharacteristic(server);
-
-    this._devices.push({device, led, data: {}});
-
-    device.ongattserverdisconnected = _ => this._deviceDisconnected(device);
-
-    this.invalidate();
-  }
-
-  async _startTemperatureNotifications(server) {
-    const service = await server.getPrimaryService('ef680200-9b35-4933-9b10-52ffa9740042');
-    const characteristic = await service.getCharacteristic('ef680201-9b35-4933-9b10-52ffa9740042');
-    characteristic.addEventListener('characteristicvaluechanged', this._onTemperatureChange);
-    return characteristic.startNotifications();
-  }
-
-  async _startAccelerometerNotifications(server) {
-    const service = await server.getPrimaryService('ef680400-9b35-4933-9b10-52ffa9740042');
-    const characteristic = await service.getCharacteristic('ef68040a-9b35-4933-9b10-52ffa9740042');
-    characteristic.addEventListener('characteristicvaluechanged', this._onAccelChange);
-    return characteristic.startNotifications();
-  }
-
-  async _startButtonClickNotifications(server) {
-    const service = await server.getPrimaryService('ef680300-9b35-4933-9b10-52ffa9740042');
-    const characteristic = await service.getCharacteristic('ef680302-9b35-4933-9b10-52ffa9740042');
-    characteristic.addEventListener('characteristicvaluechanged', this._onButtonChange);
-    return characteristic.startNotifications();
-  }
-
-  async _getLedCharacteristic(server) {
-    const service = await server.getPrimaryService('ef680300-9b35-4933-9b10-52ffa9740042');
-    return await service.getCharacteristic('ef680301-9b35-4933-9b10-52ffa9740042');
-  }
-
-  async _scan() {
-    // await getBLEThingy52()._scan();
-  }
-
-  _detachDevice(device) {
-    device.gatt.disconnect();
-    // results in _deviceDisconnected call.
-  }
 }
 
-customElements.define('main-app', MainApp);
+customElements.define('main-app', MainApp.withProperties());

@@ -59,9 +59,10 @@ export class WebMIDIControl extends BaseControl {
         let result = {};
 
         if(msg && msg.length) {
+            console.log(msg);
             result.type = msg[0] & 0xf0;
             result.channel = result.type != 0xf0 ? msg[0] & 0x0f : undefined;
-            
+
             switch(result.type) {
                 case MIDI_MSG_TYPE.NOTE_ON:
                 case MIDI_MSG_TYPE.NOTE_OFF:
@@ -79,6 +80,13 @@ export class WebMIDIControl extends BaseControl {
                     break;
 
             }
+
+            // Found in forum: "Yes, a Note On message with a zero velocity is equivalent to a Note Off message.
+            // This facilitates "running status" which is why the status byte is not present in the second message. This is standard MIDI.""
+            if(result.type === MIDI_MSG_TYPE.NOTE_ON && msg[2] === 0) {
+                result.type = MIDI_MSG_TYPE.NOTE_OFF;
+            }
+            
         }
 
         return result;
