@@ -1,7 +1,6 @@
 // @ts-check
 import {html, LitElement} from '../modules/lit-html-element/lit-element.js';
 import {repeat} from '../modules/lit-html/lib/repeat.js';
-// import {getBLEThingy52} from './ble-thingy52.js';
 import {MatButton} from '../local_modules/mat-button/mat-button.js';
 import {SampleVisualizer} from '../local_modules/sample-visualizer/sample-visualizer.js';
 
@@ -29,9 +28,6 @@ export class MainApp extends LitElement {
 
     this.playEffectNote = this.playEffectNote.bind(this);
     this.stopNote = this.stopNote.bind(this);
-
-    // getBLEThingy52().addEventListener('message', (msg) => { console.log(msg.detail) });
-    // getBLEThingy52().addEventListener('connect', this._handleConnect.bind(this));
 
     const toneDiff = Math.pow(2, 1/12);
 
