@@ -11,12 +11,19 @@ export class ControllerSettings extends LitElement {
     constructor() {
         super();
 
+        this.onChange = this.onChange.bind(this);
+
         for(let [type, controller] of Controllers) {
             console.log('Controller registered:', type);
-            controller.addEventListener('connect', (e) => console.log('connect', e.detail));
-            controller.addEventListener('disconnect', (e) => console.log('disconnect', e.detail));
+            controller.addEventListener('connect', this.onChange);
+            controller.addEventListener('disconnect', this.onChange);
+            controller.addEventListener('message', this.onChange);
             controller.addEventListener('midi-event', (e) => console.log('midi-event', e.detail));
         }  
+    }
+
+    onChange() {
+        this.invalidate();
     }
 
     render() {
@@ -35,7 +42,7 @@ export class ControllerSettings extends LitElement {
 
           <ul>
           ${Array.from(Controllers).map(([key,val]) => {
-              return html`<li>${key} (${val.devices.length})</li>`
+              return html`<li>${key} (${val.devices.length}) - ${val.currentMessage}</li>`
           })}
           </ul>
         `;

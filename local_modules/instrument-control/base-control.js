@@ -26,4 +26,9 @@ export class BaseControl extends EventTarget {
     emitControlEvent(deviceId, data) {
         this.dispatchEvent(new CustomEvent('midi-event', {detail: {type: this._controllerType, device: deviceId, data: data}}));
     }
+
+    emitMessage(deviceId, message) {
+        this.currentMessage = message;
+        this.dispatchEvent(new CustomEvent('message', {detail: {type: this._controllerType, device: deviceId, message: message}}));
+    }
 }

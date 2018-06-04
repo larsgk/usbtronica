@@ -19,9 +19,6 @@ export class MainApp extends LitElement {
 
     this._notes = [];
 
-    this._onTemperatureChange = this._onTemperatureChange.bind(this);
-    this._onAccelChange = this._onAccelChange.bind(this);
-    this._onButtonChange = this._onButtonChange.bind(this);
     this._loadSound = this._loadSound.bind(this);
     this._recordToggle = this._recordToggle.bind(this);
     this._playRecording = this._playRecording.bind(this);
@@ -143,6 +140,7 @@ export class MainApp extends LitElement {
   }
 
   _convertSampleBlob(blob) {
+    console.log(typeof blob);
     const aCtx = AudioUtils.ctx;
     var reader = new FileReader();
     reader.onload = () => {
