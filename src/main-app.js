@@ -19,7 +19,8 @@ export class MainApp extends LitElement {
     this._notes = [];
 
     // for dev - will be moved to respective components...
-    this._doScanForDevices = this._doScanForDevices.bind(this);
+    this._doScanForEmpiriKit = this._doScanForEmpiriKit.bind(this);
+    this._doScanForThingy52 = this._doScanForThingy52.bind(this);
 
 
 
@@ -221,7 +222,8 @@ export class MainApp extends LitElement {
       <br>
       <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
       <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
-      <mat-button on-click='${ this._doScanForDevices }'>Scan for devices</mat-button>
+      <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
+      <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
       <controller-settings></controller-settings>
       <sample-visualizer id='recording' class="ccc"></sample-visualizer>
       <sample-visualizer class="aaa" on-click='${ this._loadSound }'>AAA</sample-visualizer>
@@ -230,13 +232,18 @@ export class MainApp extends LitElement {
     `;
   }
 
-  _doScanForDevices() {
-    for(let [type, controller] of Controllers) {
-      if(controller.scan) {
-        controller.scan();
-      }
-    }
-    
+  // the scan functions will be moved into respective settings sub-panels for respective controllers...
+  _doScanForEmpiriKit() {
+    Controllers.get('EmpiriKitControl').scan();
+    // for(let [type, controller] of Controllers) {
+    //   if(controller.scan) {
+    //     controller.scan();
+    //   }
+    // }    
+  }
+
+  _doScanForThingy52() {
+    Controllers.get('Thingy52Control').scan();
   }
 
   _enableAudio() {
