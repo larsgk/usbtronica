@@ -16,8 +16,14 @@ export class MainApp extends LitElement {
   constructor() {
     super();
     this._devices = [];
-
     this._notes = [];
+
+    // for dev - will be moved to respective components...
+    this._doScanForDevices = this._doScanForDevices.bind(this);
+
+
+
+    this._loadSound = this._loadSound.bind(this);
 
     this._loadSound = this._loadSound.bind(this);
     this._recordToggle = this._recordToggle.bind(this);
@@ -31,6 +37,7 @@ export class MainApp extends LitElement {
     for(let [type, controller] of Controllers) {
       console.log('Controller registered:', type);
       controller.addEventListener('connect', (e) => console.log('connect', e.detail));
+      controller.addEventListener('disconnect', (e) => console.log('disconnect', e.detail));
       controller.addEventListener('midi-event', (e) => {
         const msg = e.detail.data;
         console.log('midi-event', MIDI_MSG_TYPE_NAME[msg.type], msg);
@@ -76,11 +83,6 @@ export class MainApp extends LitElement {
 
           this._convertSampleBlob(blob);
           this.isRecording = false;
-          // debounce a bit ;)
-          // setTimeout(() => {
-          //   this.$.record.classList.remove('recording');
-          //   this.$.record.disabled = false;
-          // }, 1000);
         }
       
         this.mediaRecorder.ondataavailable = (e) => {
@@ -111,14 +113,21 @@ export class MainApp extends LitElement {
     }
   }
 
-  playEffectNote(rate, note) {
+  playEffectNote(rate, note, velocity) {
+    if(velocity === undefined) velocity = 0x7F;
     const aCtx = AudioUtils.ctx;
     const src = aCtx.createBufferSource();
     if(rate) {
       src.playbackRate.value = rate;
     }
     src.buffer = this.lastRecording;
-    src.connect(aCtx.destination);
+
+    const gainNode = aCtx.createGain();
+    gainNode.gain.value = velocity / 0x7F; 
+
+    src.connect(gainNode);
+    gainNode.connect(aCtx.destination);
+
     src.start(0);
     this._notes[note] = src;
   }
@@ -175,14 +184,6 @@ export class MainApp extends LitElement {
     draw();
   }
 
-  _handleConnect(evt) {
-    const msg = evt.detail;
-
-    if(msg.type === 'ble') {
-      this._attachDevice(msg.device);
-    }
-  }
-
   render() {
     return html`
       <style>
@@ -220,7 +221,7 @@ export class MainApp extends LitElement {
       <br>
       <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
       <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
-      <mat-button on-click='${ _ => this._doScanForDevices()}'>Scan for devices</mat-button>
+      <mat-button on-click='${ this._doScanForDevices }'>Scan for devices</mat-button>
       <controller-settings></controller-settings>
       <sample-visualizer id='recording' class="ccc"></sample-visualizer>
       <sample-visualizer class="aaa" on-click='${ this._loadSound }'>AAA</sample-visualizer>

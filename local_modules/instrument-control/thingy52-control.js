@@ -22,7 +22,7 @@ export class Thingy52Control extends BaseControl {
     }
 
     initialize() {
-
+        // todo ..
     }
 
     async scan() {
@@ -60,12 +60,12 @@ export class Thingy52Control extends BaseControl {
             return;
         }
 
-
         const server = await device.gatt.connect();
 
         await this._startAccelerometerNotifications(server);
         await this._startButtonClickNotifications(server);
-    
+
+        // Maybe we need some light to indicate accelerometer 
         // const led = await this._getLedCharacteristic(server);
     
         this._devices.set(device.id, device);
@@ -77,20 +77,20 @@ export class Thingy52Control extends BaseControl {
 
     _onAccelChange(event) {
         const target = event.target;
+        const deviceId = target.service.device.id;
 
-        
         const accel = {
           x: +target.value.getFloat32(0, true).toPrecision(5),
           y: +target.value.getFloat32(4, true).toPrecision(5),
           z: +target.value.getFloat32(8, true).toPrecision(5)
         };
 
-        //console.log(accel);
-
-        // calc note & velocity value
-        //quick'n'dirty test
+        // calc note (& velocity) value
+        // quick'n'dirty test
 
         this._note = Math.round(60 + accel.y);
+
+        this.emitMessage(deviceId, `note# ${this._note}`);
     }
     
     _onButtonChange(event) {
@@ -110,7 +110,6 @@ export class Thingy52Control extends BaseControl {
                 this.emitControlEvent(deviceId, {type: MIDI_MSG_TYPE.NOTE_OFF, channel: 0, note: this._lastNote, velocity: this.MAX_VELOCITY});
             }
         }
-        // buttonPressed ? NOTE_ON : NOTE_OFF....
     }
 
     async _startAccelerometerNotifications(server) {

@@ -16,10 +16,19 @@ export class BaseControl extends EventTarget {
     }
 
     emitConnected(deviceId) {
+        if(this.devices.includes(deviceId)) {
+            throw `Device ${deviceId} on ${this._controllerType} already connected!`;
+        }
+        this.devices.push(deviceId);
         this.dispatchEvent(new CustomEvent('connect', {detail: {type: this._controllerType, device: deviceId}}));
     }
 
     emitDisconnected(deviceId) {
+        const idx = this.devices.indexOf(deviceId);
+        if(idx === -1) {
+            throw `Device ${deviceId} doesn't exist on ${this._controllerType}!`;
+        }
+        this.devices.splice(idx,1);
         this.dispatchEvent(new CustomEvent('disconnect', {detail: {type: this._controllerType, device: deviceId}}));
     }
 

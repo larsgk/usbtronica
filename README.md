@@ -27,6 +27,7 @@ Utilizing:
 * http://blog.chrislowis.co.uk/2013/06/10/playing-multiple-notes-web-audio-api.html
 * https://www.keithmcmillen.com/blog/making-music-in-the-browser-web-audio-midi-envelope-generator/
 * https://codepen.io/skoyah/pen/dePEGJ
+* https://css-tricks.com/animating-layouts-with-the-flip-technique/
 * http://jsbin.com/lenapigo/1/edit?html,css,js,output ( progress/seek in audio )
 * https://developers.google.com/web/updates/2014/07/Blob-support-for-IndexedDB-landed-on-Chrome-Dev
 * https://googlechrome.github.io/samples/web-bluetooth/automatic-reconnect-async-await.html

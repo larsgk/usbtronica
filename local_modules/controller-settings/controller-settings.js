@@ -22,7 +22,7 @@ export class ControllerSettings extends LitElement {
         }  
     }
 
-    onChange() {
+    onChange(evt) {
         this.invalidate();
     }
 

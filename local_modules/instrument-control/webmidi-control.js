@@ -83,6 +83,7 @@ export class WebMIDIControl extends BaseControl {
 
             // Found in forum: "Yes, a Note On message with a zero velocity is equivalent to a Note Off message.
             // This facilitates "running status" which is why the status byte is not present in the second message. This is standard MIDI.""
+            // also: https://stackoverflow.com/questions/3306866/why-is-there-a-velocity-parameter-for-note-off-events
             if(result.type === MIDI_MSG_TYPE.NOTE_ON && msg[2] === 0) {
                 result.type = MIDI_MSG_TYPE.NOTE_OFF;
             }

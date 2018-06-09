@@ -19,19 +19,18 @@ export class KeyboardControl extends BaseControl {
 
         this._deviceId = 0;  // assuming one computer keyboard present
 
-        this.devices.push(this._deviceId);
-
         window.setTimeout(() => {this.initialize()}, 0);
+        window.setTimeout(() => {this.emitConnected(this._deviceId)}, 100);;
     }
 
     // Special case for the keyboard
-    addEventListener(type, listener, options) {
-      super.addEventListener(type, listener, options);
+    // addEventListener(type, listener, options) {
+    //   super.addEventListener(type, listener, options);
 
-      if(type === 'connect') {
-        window.setTimeout(() => {this.emitConnected(this._deviceId)}, 0);;
-      }
-    }
+    //   if(type === 'connect') {
+    //     window.setTimeout(() => {this.emitConnected(this._deviceId)}, 0);;
+    //   }
+    // }
 
     initialize() {
         const _KEY_NOTE = {
