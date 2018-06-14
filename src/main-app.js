@@ -198,23 +198,14 @@ export class MainApp extends LitElement {
           font-weight: bold;
         }
 
-        .aaa {
-          --line-color:blue;
-          --background-color:yellow;
-          width:350px;
-          height:200px;
-        }
-
-        .bbb {
-          --line-color:red;
-          --background-color:green;
-          width: 50vw;
-          height: 200px;
-        }
-
-        .ccc {
+        sample-visualizer {
           width: 100%;
-          height: 150px;
+          height: 100px;
+        }
+
+        .live {
+          --line-color:#bf393e;
+          --background-color:#d99449;
         }
 
       </style>
@@ -225,10 +216,10 @@ export class MainApp extends LitElement {
       <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
       <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
       <controller-settings></controller-settings>
-      <sample-visualizer id='recording' class="ccc"></sample-visualizer>
-      <sample-visualizer class="aaa" on-click='${ this._loadSound }'>AAA</sample-visualizer>
-      <sample-visualizer id="lastRec" on-click='${ this._playRecording }'class="bbb"></sample-visualizer>
-      <sample-visualizer class="ccc" on-click='${ this._loadSound }'>CCC</sample-visualizer><br>
+      Live:
+      <sample-visualizer id='recording' class='live'></sample-visualizer>
+      Recording:
+      <sample-visualizer id="lastRec" on-click='${ this._playRecording }'></sample-visualizer>
     `;
   }
 

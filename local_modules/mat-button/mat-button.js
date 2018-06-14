@@ -10,7 +10,7 @@ export class MatButton extends LitElement {
             position: relative;
             box-sizing: border-box;
             min-width: 5.14em;
-            margin: 0 0.29em;
+            margin: 0.2em;
             background: transparent;
             text-align: center;
             font: inherit;

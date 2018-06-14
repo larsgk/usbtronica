@@ -50,7 +50,7 @@ export class SampleVisualizer extends LitElement {
     });
     
     // Observe one or multiple elements
-    ro.observe(this);
+    ro.observe(this.$('vizdiv'));
   }
 
   _prepData() {
@@ -127,19 +127,30 @@ export class SampleVisualizer extends LitElement {
       <style>
         :host {
           display: block;
-          margin: 0;
+          margin:0;
           -webkit-user-select: none;
           -moz-user-select: none;
           user-select: none;
           box-sizing: border-box;
         }
+        div {
+          display: inline-block;
+          position: relative;
+          box-sizing: border-box;
+          padding: 0.2em;
+          height:100%;
+          width:100%;
+        }
         canvas {
           display: block;
           margin:0;
           border-radius: 15px;
+          box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
         }
       </style>
-      <canvas id="viz" width="${this._width}" height="${this._height}"></canvas>
+      <div id="vizdiv">
+        <canvas id="viz" width="${this._width}" height="${this._height}"></canvas>
+      </div>
     `;
   }
 }
