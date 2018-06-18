@@ -23,7 +23,6 @@ export class MainApp extends LitElement {
     this._doScanForThingy52 = this._doScanForThingy52.bind(this);
 
 
-
     this._loadSound = this._loadSound.bind(this);
 
     this._loadSound = this._loadSound.bind(this);
@@ -33,6 +32,7 @@ export class MainApp extends LitElement {
     this.playEffectNote = this.playEffectNote.bind(this);
     this.stopNote = this.stopNote.bind(this);
 
+    // To emulate an instrument playing with 1/2 tone differences, we need this factor on the playback rate between each key:
     const toneDiff = Math.pow(2, 1/12);
 
     for(let [type, controller] of Controllers) {
@@ -188,9 +188,16 @@ export class MainApp extends LitElement {
   render() {
     return html`
       <style>
-        :host {
-          font-family: Roboto, Arial;
+        @font-face {
+          font-family: Bitwise;
+          src: url('./bitwise.woff2');
         }
+
+        :host {
+          font-family: Bitwise, Arial;
+          color: #4a508e;
+        }
+
         .mini-button {
           font-size: 8pt;
         }
@@ -199,48 +206,89 @@ export class MainApp extends LitElement {
         }
 
         sample-visualizer {
-          width: 100%;
           height: 100px;
+          width: 100%;
+          max-width: 100%;
         }
 
-        .live {
+        .xlive {
           --line-color:#bf393e;
           --background-color:#d99449;
         }
 
+        .live {
+          --line-color:#20ff20;
+          --background-color:#001000;
+        }
+
+        .flex-container {
+          display: flex;
+          height: 100%;
+          background-color: #d99449;
+        }
+
+        .content {
+          margin: auto;
+          position: relative;
+          width: 95%;
+          max-width: 700px;
+        }
+
+        .col {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .row {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+
+        mat-button {
+          flex-grow: 1;
+        }
+
       </style>
-      <h1>usBTronica</h1>
-      <br>
-      <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
-      <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
-      <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
-      <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
-      <controller-settings></controller-settings>
-      Live:
-      <sample-visualizer id='recording' class='live'></sample-visualizer>
-      Recording:
-      <sample-visualizer id="lastRec" on-click='${ this._playRecording }'></sample-visualizer>
+      <div class="flex-container">
+        <div class="content">
+          <div class="col">
+            <h1>usBTronica</h1>
+            <div class="row">
+              <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
+              <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
+              <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
+              <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
+            </div>
+            Live:
+            <sample-visualizer id='recording' class='live'></sample-visualizer>
+            Recording:
+            <sample-visualizer id="lastRec" on-click='${ this._playRecording }'></sample-visualizer>
+            <controller-settings></controller-settings>
+          </div>
+        </div>
+      </div>
     `;
   }
 
-  // the scan functions will be moved into respective settings sub-panels for respective controllers...
   _doScanForEmpiriKit() {
+    // empiriKit|MOTION uses Web USB. Calling the first scan requires a user gesture (~ button press)
+    // After pairing, the device will be automatically re-connected (no scan needed)
     Controllers.get('EmpiriKitControl').scan();
-    // for(let [type, controller] of Controllers) {
-    //   if(controller.scan) {
-    //     controller.scan();
-    //   }
-    // }    
   }
 
   _doScanForThingy52() {
+    // Nordic Semiconductor Thingy:52 uses Web Bluetooth.  Scanning requires a user gesture (~ button press)
     Controllers.get('Thingy52Control').scan();
   }
 
   _enableAudio() {
+    // Initiate Web Audio on a user gesture
     const aCtx = AudioUtils.ctx;
+    aCtx.resume();
+
     this._initRecording();
-    // this could just be part of a splash screen or other natural element the user clicks anyway
+    // TBD:  this could potentially be part of a splash screen or other natural element the user clicks anyway
   }
 
   _loadSound(evt) {
