@@ -31,7 +31,7 @@ export class ControllerSettings extends LitElement {
           <style>
             :host {
               display: block;
-              margin: 0;
+              margin: 0.2em;
               background: #eee;
               -webkit-user-select: none;
               -moz-user-select: none;

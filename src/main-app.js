@@ -188,11 +188,6 @@ export class MainApp extends LitElement {
   render() {
     return html`
       <style>
-        @font-face {
-          font-family: Bitwise;
-          src: url('./bitwise.woff2');
-        }
-
         :host {
           font-family: Bitwise, Arial;
           color: #4a508e;
@@ -224,7 +219,6 @@ export class MainApp extends LitElement {
         .flex-container {
           display: flex;
           height: 100%;
-          background-color: #d99449;
         }
 
         .content {
@@ -259,11 +253,12 @@ export class MainApp extends LitElement {
               <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
               <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
               <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
-            </div>
+            </div><br>
             Live:
-            <sample-visualizer id='recording' class='live'></sample-visualizer>
+            <sample-visualizer id='recording' class='live'></sample-visualizer><br>
             Recording:
-            <sample-visualizer id="lastRec" on-click='${ this._playRecording }'></sample-visualizer>
+            <sample-visualizer id="lastRec" on-click='${ this._playRecording }'></sample-visualizer><br>
+            ...TODO future cool settings:
             <controller-settings></controller-settings>
           </div>
         </div>
