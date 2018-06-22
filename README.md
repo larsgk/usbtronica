@@ -9,6 +9,8 @@ Utilizing:
 * WebUSB (empiriKit, controller)
 * WebBluetooth (Thingy:52, controller)
 
+**[Try it out here!](https://larsgk.github.io/usbtronica)**
+
 ## Features
 
 * Desktop and Mobile support
