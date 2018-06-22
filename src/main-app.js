@@ -16,21 +16,13 @@ export class MainApp extends LitElement {
   constructor() {
     super();
     this._devices = [];
-    this._notes = [];
 
-    // for dev - will be moved to respective components...
+    // Bind all callbacks 
     this._doScanForEmpiriKit = this._doScanForEmpiriKit.bind(this);
     this._doScanForThingy52 = this._doScanForThingy52.bind(this);
-
-
-    this._loadSound = this._loadSound.bind(this);
-
-    this._loadSound = this._loadSound.bind(this);
     this._recordToggle = this._recordToggle.bind(this);
-    this._playRecording = this._playRecording.bind(this);
-
-    this.playEffectNote = this.playEffectNote.bind(this);
-    this.stopNote = this.stopNote.bind(this);
+    this._loadSound = this._loadSound.bind(this);
+    this._playActiveSample = this._playActiveSample.bind(this);
 
     // To emulate an instrument playing with 1/2 tone differences, we need this factor on the playback rate between each key:
     const toneDiff = Math.pow(2, 1/12);
@@ -44,9 +36,9 @@ export class MainApp extends LitElement {
         console.log('midi-event', MIDI_MSG_TYPE_NAME[msg.type], msg);
         
         if(msg.type === MIDI_MSG_TYPE.NOTE_ON) {
-          this.playEffectNote(Math.pow(toneDiff, msg.note-60), msg.note);
+          AudioUtils.playEffectNote(this.lastRecording, Math.pow(toneDiff, msg.note-60), msg.note);
         } else if(msg.type === MIDI_MSG_TYPE.NOTE_OFF) {
-          this.stopNote(msg.note);
+          AudioUtils.stopNote(msg.note);
         }
       });
     }
@@ -78,11 +70,11 @@ export class MainApp extends LitElement {
 
         this._visualize(stream);
 
-        this.mediaRecorder.onstop = (e) => {
+        this.mediaRecorder.onstop = async (e) => {
           var blob = new Blob(chunks, { 'type' : 'audio/webm' });
           chunks = [];
 
-          this._convertSampleBlob(blob);
+          this.lastRecording = await AudioUtils.convertBlobToAudioBuffer(blob);
           this.isRecording = false;
         }
       
@@ -114,32 +106,6 @@ export class MainApp extends LitElement {
     }
   }
 
-  playEffectNote(rate, note, velocity) {
-    if(velocity === undefined) velocity = 0x7F;
-    const aCtx = AudioUtils.ctx;
-    const src = aCtx.createBufferSource();
-    if(rate) {
-      src.playbackRate.value = rate;
-    }
-    src.buffer = this.lastRecording;
-
-    const gainNode = aCtx.createGain();
-    gainNode.gain.value = velocity / 0x7F; 
-
-    src.connect(gainNode);
-    gainNode.connect(aCtx.destination);
-
-    src.start(0);
-    this._notes[note] = src;
-  }
-
-  stopNote(note) {
-      let src = this._notes[note];
-      if(src) {
-          src.stop();
-      }
-  }
-
   get lastRecording() {
     return this._lastRecording;
   }
@@ -147,20 +113,6 @@ export class MainApp extends LitElement {
   set lastRecording(val) {
     this._lastRecording = val;
     this.$('lastRec').data = val;
-  }
-
-  _convertSampleBlob(blob) {
-    console.log(typeof blob);
-    const aCtx = AudioUtils.ctx;
-    var reader = new FileReader();
-    reader.onload = () => {
-        console.log(reader.result);
-        aCtx.decodeAudioData(reader.result, buffer => {
-            this.lastRecording = buffer;
-            console.log(buffer);
-        });
-    };
-    reader.readAsArrayBuffer(blob);
   }
 
   _visualize(stream) {
@@ -206,11 +158,6 @@ export class MainApp extends LitElement {
           max-width: 100%;
         }
 
-        .xlive {
-          --line-color:#bf393e;
-          --background-color:#d99449;
-        }
-
         .live {
           --line-color:#20ff20;
           --background-color:#001000;
@@ -253,11 +200,12 @@ export class MainApp extends LitElement {
               <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
               <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
               <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
+              <mat-button on-click='${ this._loadSound }'>Load piano sound</mat-button>
             </div><br>
             Live:
             <sample-visualizer id='recording' class='live'></sample-visualizer><br>
             Recording:
-            <sample-visualizer id="lastRec" on-click='${ this._playRecording }'></sample-visualizer><br>
+            <sample-visualizer id="lastRec" on-click='${ this._playActiveSample }'></sample-visualizer><br>
             ...TODO future cool settings:
             <controller-settings></controller-settings>
           </div>
@@ -286,35 +234,12 @@ export class MainApp extends LitElement {
     // TBD:  this could potentially be part of a splash screen or other natural element the user clicks anyway
   }
 
-  _loadSound(evt) {
-    this.loadEffect('./assets/audio/test.ogg', evt.target);
+  async _loadSound(evt) {
+    this.lastRecording = await AudioUtils.loadSample('./assets/audio/piano_c.ogg');
   }
 
-  _playRecording() {
-    const aCtx = AudioUtils.ctx;
-    const src = aCtx.createBufferSource();
-    src.buffer = this.lastRecording;
-    src.connect(aCtx.destination);
-    src.start(0);
-  }
-
-  loadEffect(url, target) {
-    const aCtx = AudioUtils.ctx;
-
-    const src = aCtx.createBufferSource();
-
-    fetch(url)
-    .then(response => response.arrayBuffer() )
-    .then((buffer) => {
-      aCtx.decodeAudioData(buffer, decodedData => {
-        src.buffer = decodedData;
-
-        target.data = decodedData;
-
-        src.connect(aCtx.destination);
-        src.start(0);
-      });
-    });
+  _playActiveSample() {
+    AudioUtils.playSample(this.lastRecording);
   }
 }
 

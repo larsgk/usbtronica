@@ -1,6 +1,7 @@
 // @ts-check
 import {html, LitElement} from '../../modules/lit-html-element/lit-element.js';
 
+// Default colors for the sample visualizer (red line on dark red background)
 const _defLineColor = 'rgb(255,20,20)';
 const _defBackgroundColor = 'rgb(50,10,10)';
 
@@ -8,6 +9,8 @@ export class SampleVisualizer extends LitElement {
   constructor() {
       super();
       this._data = null;
+
+      this._renderCanvas = this._renderCanvas.bind(this);
   }
 
   get data() {
@@ -17,22 +20,21 @@ export class SampleVisualizer extends LitElement {
   set data(val) {
     this._data = val;
     this._prepData();
-    this._renderCanvas();
+    requestAnimationFrame(this._renderCanvas);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    // console.log("connectedCallback");
     requestAnimationFrame(this._initialize.bind(this));
   }
 
   _initialize() {
-    // console.log("initialize");
     this.canvas = this.$("viz");
 
-    // grab colors
-    this.lineColor = getComputedStyle(this).getPropertyValue('--line-color') || _defLineColor;
-    this.backgroundColor = getComputedStyle(this).getPropertyValue('--background-color') || _defBackgroundColor;
+    // Grab the colors from the CSS Custom Properties, use the defaults if none are defined.
+    const style = getComputedStyle(this)
+    this.lineColor = style.getPropertyValue('--line-color') || _defLineColor;
+    this.backgroundColor = style.getPropertyValue('--background-color') || _defBackgroundColor;
 
 
     // window.addEventListener('resize', this.boundResizeCanvas);
@@ -45,7 +47,7 @@ export class SampleVisualizer extends LitElement {
         this._width = Math.ceil(cr.width);
         this._height = Math.ceil(cr.height);
         this.invalidate();
-        requestAnimationFrame(this._renderCanvas.bind(this));
+        requestAnimationFrame(this._renderCanvas);
       }
     });
     
@@ -83,6 +85,7 @@ export class SampleVisualizer extends LitElement {
     const amp = cy; // don't draw outside the box
 
     if(this._renderData) {
+      // If the data buffer is limited in size, do full line drawing.
       if(this._renderData.length < this._width * 4) {
         const step = this._width / this._renderData.length;
         let x = 0;
@@ -102,6 +105,7 @@ export class SampleVisualizer extends LitElement {
   
         ctx.stroke();  
       } else {
+        // Optimized drawing for larger data sets.
         const step = Math.floor(this._renderData.length / this._width);
 
         ctx.fillStyle = this.lineColor;
