@@ -36,7 +36,7 @@ export class MainApp extends LitElement {
         console.log('midi-event', MIDI_MSG_TYPE_NAME[msg.type], msg);
         
         if(msg.type === MIDI_MSG_TYPE.NOTE_ON) {
-          AudioUtils.playEffectNote(this.lastRecording, Math.pow(toneDiff, msg.note-60), msg.note);
+          AudioUtils.playEffectNote(this.lastRecording, Math.pow(toneDiff, msg.note-60), msg.note, msg.velocity);
         } else if(msg.type === MIDI_MSG_TYPE.NOTE_OFF) {
           AudioUtils.stopNote(msg.note);
         }

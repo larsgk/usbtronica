@@ -16,7 +16,7 @@ const _keyboardControl = new KeyboardControl();
 const _thingy52Control = new Thingy52Control();
 const _webMIDIControl = new WebMIDIControl();
 
-_controllers.set(_dummyControl.controllerType, _dummyControl);
+//_controllers.set(_dummyControl.controllerType, _dummyControl);
 _controllers.set(_empiriKitControl.controllerType, _empiriKitControl);
 _controllers.set(_keyboardControl.controllerType, _keyboardControl);
 _controllers.set(_thingy52Control.controllerType, _thingy52Control);

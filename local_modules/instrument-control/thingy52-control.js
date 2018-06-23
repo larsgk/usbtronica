@@ -51,6 +51,7 @@ export class Thingy52Control extends BaseControl {
         if(this._devices.has(device.id)) {
             this._devices.delete(device.id);
             this.emitDisconnected(device.id);
+            this.emitMessage(device.id, "");
         }
     }
 
@@ -87,10 +88,14 @@ export class Thingy52Control extends BaseControl {
 
         // calc note (& velocity) value
         // quick'n'dirty test
-
-        this._note = Math.round(60 + accel.y);
-
-        this.emitMessage(deviceId, `note# ${this._note}`);
+        const note = Math.round(60 + accel.y);
+        const velocity = Math.min(Math.max(0, Math.round(0x3f - (8 * accel.x))), this.MAX_VELOCITY);
+                    
+        if(this._note != note || this._velocity != velocity) {
+            this._note = note;
+            this._velocity = velocity;
+            this.emitMessage(deviceId, `Note #${this._note} @ vel ${this._velocity}`);
+        }
     }
     
     _onButtonChange(event) {
@@ -102,7 +107,7 @@ export class Thingy52Control extends BaseControl {
         console.log(buttonPressed ? "NOTE_ON" : "NOTE_OFF");
         if(buttonPressed) {
             if(this._note) {
-                this.emitControlEvent(deviceId, {type: MIDI_MSG_TYPE.NOTE_ON, channel: 0, note: this._note, velocity: this.MAX_VELOCITY});
+                this.emitControlEvent(deviceId, {type: MIDI_MSG_TYPE.NOTE_ON, channel: 0, note: this._note, velocity: this._velocity});
                 this._lastNote = this._note;
             }
         } else {

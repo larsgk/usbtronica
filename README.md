@@ -33,6 +33,7 @@ Utilizing:
 * http://jsbin.com/lenapigo/1/edit?html,css,js,output ( progress/seek in audio )
 * https://developers.google.com/web/updates/2014/07/Blob-support-for-IndexedDB-landed-on-Chrome-Dev
 * https://googlechrome.github.io/samples/web-bluetooth/automatic-reconnect-async-await.html
+* https://webaudiodemos.appspot.com/AudioRecorder/index.html
 
 
 ## Thoughts
