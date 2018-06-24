@@ -1,5 +1,15 @@
 # usBTronica 
 
+**NOTE:  This is work in progress!
+Currently, you can record an instrument (or use the piano sound) and play using...
+
+* a QWERTY keyboard ('white keys' = QWERTYUI, 'black keys' = '23 567')
+* Thingy:52 (accelerometer & button) (Web Bluetooth)
+* empiriKit|MOTION (accelerometer & touch bar) (Web USB)
+* midi keyboard (WebMIDI)
+
+---
+
 A simple sampler built with lit-html & lit-element
 
 Utilizing:
@@ -8,6 +18,7 @@ Utilizing:
 * WebMIDI (controller)
 * WebUSB (empiriKit, controller)
 * WebBluetooth (Thingy:52, controller)
+
 
 **[Try it out here!](https://larsgk.github.io/usbtronica)**
 
