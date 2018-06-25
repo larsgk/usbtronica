@@ -12,9 +12,6 @@ export class KeyboardControl extends BaseControl {
     constructor() {
         super('KeyboardControl');
 
-        // debug
-        //window.setInterval(() => this.emitConnected(`keyboard${Math.floor(10*Math.random())}`), 2000);
-
         this._channel = 0;  // channels: 1 - 16 (but we zero index ;))
 
         this._deviceId = 0;  // assuming one computer keyboard present
@@ -22,15 +19,6 @@ export class KeyboardControl extends BaseControl {
         window.setTimeout(() => {this.initialize()}, 0);
         window.setTimeout(() => {this.emitConnected(this._deviceId)}, 100);;
     }
-
-    // Special case for the keyboard
-    // addEventListener(type, listener, options) {
-    //   super.addEventListener(type, listener, options);
-
-    //   if(type === 'connect') {
-    //     window.setTimeout(() => {this.emitConnected(this._deviceId)}, 0);;
-    //   }
-    // }
 
     initialize() {
         const _KEY_NOTE = {
