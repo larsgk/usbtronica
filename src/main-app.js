@@ -55,8 +55,6 @@ export class MainApp extends LitElement {
   }
 
   initialize() {
-    //this._initRecording();
-
     this._recording = this.$('recording');
   }
 

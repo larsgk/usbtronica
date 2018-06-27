@@ -12,8 +12,7 @@ export class WebMIDIControl extends BaseControl {
         super('WebMIDIControl');
 
         this._onMIDIEvent = this._onMIDIEvent.bind(this);
-
-        this._deviceId = 0; // (could be 0 - many)
+        this._onMIDIStateChange = this._onMIDIStateChange.bind(this);
 
         window.setTimeout(() => {this.initialize()}, 0);
     }
@@ -31,7 +30,7 @@ export class WebMIDIControl extends BaseControl {
                     input.value.onmidimessage = this._onMIDIEvent;
                 }
 
-                this._midiaccess.onstatechange = this._onMIDIStateChange.bind(this);
+                this._midiaccess.onstatechange = this._onMIDIStateChange;
                 
             },
             error => console.error("WebMIDI error: " + error));
@@ -50,7 +49,10 @@ export class WebMIDIControl extends BaseControl {
         let port = event.port;
         if(port instanceof MIDIInput) {
             if(port.state === 'connected') {
-                port.onmidimessage = this._onMIDIEvent.bind(this);
+                this.emitConnected(port.id);
+                port.onmidimessage = this._onMIDIEvent;
+            } else if(port.state === 'disconnected') {
+                this.emitDisconnected(port.id);
             }
         }
     }
