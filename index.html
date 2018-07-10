@@ -20,4 +20,11 @@
   <body>
     <main-app></main-app>
   </body>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js').then(function(reg) {
+        scope:'/usbtronica/'
+      });
+    }
+  </script>
 </html>
