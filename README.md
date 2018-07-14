@@ -26,13 +26,16 @@ Utilizing:
 
 ## Features (..to be done :))
 
-* Desktop and Mobile support
-* PWA
+* ~~Desktop and Mobile support~~ DONE
+* ~~PWA~~  DONE
 * Visual trimming/filtering of recordings
 * Storing/Loading sounds (indexeddb)
+* Storing/loading wavetable instruments
 * Simple UI for configuring external controllers
 * Using device sensors & touch when no external controllers available
 * Dynamically tie controllers to actions (midi, variable, binary)
+* Create wavetable instruments from trimmed samples.
+* Create QR code of wavetable instrument (if possible) for local sharing.
 
 
 ## References/inspiration

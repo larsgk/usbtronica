@@ -15,7 +15,6 @@ export class MainApp extends LitElement {
 
   constructor() {
     super();
-    this._devices = [];
 
     // Bind all callbacks 
     this._doScanForEmpiriKit = this._doScanForEmpiriKit.bind(this);
@@ -55,7 +54,7 @@ export class MainApp extends LitElement {
   }
 
   initialize() {
-    this._recording = this.$('recording');
+    this._micSignal = this.$('micSignal');
   }
 
   _initRecording() {
@@ -119,17 +118,17 @@ export class MainApp extends LitElement {
     let source = aCtx.createMediaStreamSource(stream);
 
     let analyser = aCtx.createAnalyser();
-    analyser.fftSize = 2048;
+    analyser.fftSize = 1024;
     let dataArray = new Float32Array(analyser.fftSize);
 
-    this._recording.data = dataArray;
+    this._micSignal.data = dataArray;
 
     source.connect(analyser);
 
     let draw = () => {
       requestAnimationFrame(draw);
       analyser.getFloatTimeDomainData(dataArray);
-      this._recording.data = dataArray;
+      this._micSignal.data = dataArray;
     }
 
     draw();
@@ -201,7 +200,7 @@ export class MainApp extends LitElement {
               <mat-button on-click='${ this._loadSound }'>Load piano sound</mat-button>
             </div><br>
             Live:
-            <sample-visualizer id='recording' class='live'></sample-visualizer><br>
+            <sample-visualizer id='micSignal' class='live'></sample-visualizer><br>
             Recording:
             <sample-visualizer id="lastRec" on-click='${ this._playActiveSample }'></sample-visualizer><br>
             ...TODO future cool settings:
