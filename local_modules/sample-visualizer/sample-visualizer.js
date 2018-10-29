@@ -57,7 +57,7 @@ export class SampleVisualizer extends LitElement {
 
   _prepData() {
     if(this._data instanceof AudioBuffer) {
-      this._renderData = this._data.getChannelData(0);
+      this._renderData = this._data.getChannelData(0); // TBD: assume mono?
     } else if(this._data instanceof Float32Array) {
       this._renderData = this._data;
     } else {

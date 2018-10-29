@@ -60,21 +60,25 @@ export class EmpiriKitControl extends BaseControl {
         })
         .catch(error => { console.log(error); });
     }
-    
+
+    // TODO: Switch to binary messages supported in new firmware (18.10.001)
     readFromDevice() {
         this.device.transferIn(5, 64).then(result => {
             const decoder = new TextDecoder();
             this.rstring += decoder.decode(result.data);
             // do a quick JSON smoketest (should do better with decoder/streaming)
-            const startb = (this.rstring.match(/{/g)||[]).length;
-            const endb = (this.rstring.match(/}/g)||[]).length;
-            if(startb > 0 && startb === endb) {
+            const startIdx = this.rstring.indexOf('{');
+            if(startIdx > 0) this.rstring = this.rstring.substring(startIdx);
+            const endIdx = this.rstring.indexOf('}');
+            if(endIdx > -1) {
+                const parseStr = this.rstring.substring(0, endIdx+1);
+                this.rstring = this.rstring.substring(endIdx+1);
                 try {
-                    const msg = JSON.parse(this.rstring);
+                    const msg = JSON.parse(parseStr);
                     this._handleMessage(msg);
                     //   this.dispatchEvent(new CustomEvent('ek-event', {detail:msg}), {bubbles: true});
                 } catch(e) {
-                    console.log("NOT JSON:",this.rstring);
+                    console.log("NOT JSON:",parseStr);
                 }
                 this.rstring = "";
             }
@@ -99,6 +103,7 @@ export class EmpiriKitControl extends BaseControl {
     };
     
     _startDataStream() {
+        this.sendCMD('{"SETRTE":10}');
         this.sendCMD('{"STRACC":1}');
         this.sendCMD('{"STRTCH":1}');
     }

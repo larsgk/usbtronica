@@ -33,6 +33,7 @@ Utilizing:
 * Storing/loading wavetable instruments
 * Simple UI for configuring external controllers
 * Using device sensors & touch when no external controllers available
+* Virtual touch piano (1 - 1.5 octave)
 * Dynamically tie controllers to actions (midi, variable, binary)
 * Create wavetable instruments from trimmed samples.
 * Create QR code of wavetable instrument (if possible) for local sharing.
