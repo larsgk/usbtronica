@@ -1,6 +1,7 @@
 // @ts-check
-import {html, LitElement} from '../modules/lit-html-element/lit-element.js';
-import {repeat} from '../modules/lit-html/lib/repeat.js';
+import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import { repeat } from 'https://unpkg.com/lit-html@0.13.0/directives/repeat.js?module';
+
 import {MatButton} from '../local_modules/mat-button/mat-button.js';
 import {SampleVisualizer} from '../local_modules/sample-visualizer/sample-visualizer.js';
 
@@ -42,7 +43,13 @@ export class MainApp extends LitElement {
       });
     }
 
-    requestAnimationFrame(this.initialize.bind(this));
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    requestAnimationFrame(_ => {
+      this._initialize()
+    });
   }
 
   static get properties() {
@@ -53,8 +60,10 @@ export class MainApp extends LitElement {
     }
   }
 
-  initialize() {
-    this._micSignal = this.$('micSignal');
+  
+
+  _initialize() {
+    this._micSignal =  this.shadowRoot.getElementById('micSignal');
   }
 
   _initRecording() {
@@ -109,7 +118,7 @@ export class MainApp extends LitElement {
 
   set lastRecording(val) {
     this._lastRecording = val;
-    this.$('lastRec').data = val;
+     this.shadowRoot.getElementById('lastRec').data = val;
   }
 
   _visualize(stream) {
@@ -193,16 +202,16 @@ export class MainApp extends LitElement {
           <div class="col">
             <h1>usBTronica</h1>
             <div class="row">
-              <mat-button on-click='${ _ => this._enableAudio()}'>Start audio</mat-button>
-              <mat-button id="btnrecord" on-click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
-              <mat-button on-click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
-              <mat-button on-click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
-              <mat-button on-click='${ this._loadSound }'>Load piano sound</mat-button>
+              <mat-button @click='${ this._enableAudio }'>Start audio</mat-button>
+              <mat-button id="btnrecord" @click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
+              <mat-button @click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
+              <mat-button @click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
+              <mat-button @click='${ this._loadSound }'>Load piano sound</mat-button>
             </div><br>
             Live:
             <sample-visualizer id='micSignal' class='live'></sample-visualizer><br>
             Recording:
-            <sample-visualizer id="lastRec" on-click='${ this._playActiveSample }'></sample-visualizer><br>
+            <sample-visualizer id="lastRec" @click='${ this._playActiveSample }'></sample-visualizer><br>
             ...TODO future cool settings:
             <controller-settings></controller-settings>
           </div>
@@ -240,4 +249,4 @@ export class MainApp extends LitElement {
   }
 }
 
-customElements.define('main-app', MainApp.withProperties());
+customElements.define('main-app', MainApp);

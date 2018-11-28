@@ -1,5 +1,5 @@
 // @ts-check
-import {html, LitElement} from '../../modules/lit-html-element/lit-element.js';
+import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 
 import {Controllers} from '../instrument-control/instrument-control.js';
 
@@ -23,7 +23,7 @@ export class ControllerSettings extends LitElement {
     }
 
     onChange(evt) {
-        this.invalidate();
+        this.requestUpdate();
     }
 
     render() {
