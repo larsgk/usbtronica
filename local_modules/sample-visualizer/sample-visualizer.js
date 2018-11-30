@@ -1,5 +1,5 @@
 // @ts-check
-import {html, LitElement} from '../../modules/lit-html-element/lit-element.js';
+import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 
 // Default colors for the sample visualizer (red line on dark red background)
 const _defLineColor = 'rgb(255,20,20)';
@@ -29,7 +29,7 @@ export class SampleVisualizer extends LitElement {
   }
 
   _initialize() {
-    this.canvas = this.$("viz");
+    this.canvas =  this.shadowRoot.getElementById("viz");
 
     // Grab the colors from the CSS Custom Properties, use the defaults if none are defined.
     const style = getComputedStyle(this)
@@ -46,13 +46,13 @@ export class SampleVisualizer extends LitElement {
         // console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
         this._width = Math.ceil(cr.width);
         this._height = Math.ceil(cr.height);
-        this.invalidate();
+        this.requestUpdate();
         requestAnimationFrame(this._renderCanvas);
       }
     });
     
     // Observe one or multiple elements
-    ro.observe(this.$('vizdiv'));
+    ro.observe( this.shadowRoot.getElementById('vizdiv'));
   }
 
   _prepData() {
