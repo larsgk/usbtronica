@@ -80,6 +80,7 @@ export class MainApp extends LitElement {
           var blob = new Blob(chunks, { 'type' : 'audio/webm' });
           chunks = [];
 
+          this.lastRecordingBlob = blob;
           this.lastRecording = await AudioUtils.convertBlobToAudioBuffer(blob);
           this.isRecording = false;
         }
@@ -207,6 +208,7 @@ export class MainApp extends LitElement {
               <mat-button @click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
               <mat-button @click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
               <mat-button @click='${ this._loadSound }'>Load piano sound</mat-button>
+              <mat-button .hidden=${ !this._lastRecording } @click='${ this._exportSound }'>${  this._lastRecording ? "Export Recorded Sound" : "..." }</mat-button>
             </div><br>
             Live:
             <sample-visualizer id='micSignal' class='live'></sample-visualizer><br>
@@ -242,6 +244,15 @@ export class MainApp extends LitElement {
 
   async _loadSound(evt) {
     this.lastRecording = await AudioUtils.loadSample('./assets/audio/piano_c.ogg');
+  }
+
+  _exportSound() {
+    if (this._lastRecording) {
+      const exportElement = document.createElement('a');
+      exportElement.download = `usbtronica-${Date.now()}.webm`;
+      exportElement.href = URL.createObjectURL(this.lastRecordingBlob);
+      exportElement.click();      
+    }
   }
 
   _playActiveSample() {
