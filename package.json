@@ -31,7 +31,7 @@
     "rollup-plugin-copy-assets-to": "^1.0.0",
     "rollup-plugin-multi-entry": "^2.1.0",
     "rollup-plugin-node-resolve": "^4.2.4",
-    "rollup-plugin-terser": "^4.0.4",
+    "rollup-plugin-terser": "^5.2.0",
     "serve": "^10.1.1",
     "workbox-build": "^4.3.1"
   }
