@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="./assets/images/favicon.ico">
+    <link rel="manifest" href="./manifest.json">
+    <script src="./index.js"></script>
+    <style>
+      @import './assets/fonts/fonts.css';
+
+      html, body {
+        margin:0;
+        height: 100%;
+        background-color: #d99449;
+      }
+    </style>
+  </head>
+  <body>
+    <main-app></main-app>
+  </body>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(function(reg) {
+        scope:'/usbtronica/'
+      });
+    }
+  </script>
+</html>

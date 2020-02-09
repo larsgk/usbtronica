@@ -1,5 +1,5 @@
 // @ts-check
-import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import { html, LitElement } from 'lit-element';
 
 export class MatButton extends LitElement {
     render() {
@@ -37,4 +37,3 @@ export class MatButton extends LitElement {
     }
   }
   customElements.define('mat-button', MatButton);
-  

@@ -3,14 +3,36 @@
   "version": "0.0.1",
   "description": "simple synth and hw connectivity",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c rollup.config.js",
+    "unittest": "npm run bundle:test && karma start --singleRun",
+    "unittest:watch": "rollup -c rollup.test.config.js -w & karma start --no-single-run --auto-watch",
+    "watch": "rollup -c rollup.config.js -w",
+    "start": "serve -l tcp://0.0.0.0:5000 docs",
+    "dev": "npm-run-all --parallel start watch"
   },
   "author": "Lars Knudsen",
   "license": "BSD-2-Clause",
   "dependencies": {
+    "lit-element": "^2.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-decorators": "^7.4.4",
+    "@babel/plugin-syntax-dynamic-import": "^7.2.0",
+    "@types/dom-mediacapture-record": "^1.0.3",
     "@types/w3c-web-usb": "^1.0.0",
     "@types/web-bluetooth": "0.0.4",
-    "lit-html": "^0.9.0",
-    "lit-html-element": "^0.9.1"
+    "@webcomponents/webcomponentsjs": "^2.2.10",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^1.27.1",
+    "rollup-plugin-babel": "^4.3.0",
+    "rollup-plugin-cleaner": "^0.2.0",
+    "rollup-plugin-copy-assets-to": "^1.0.0",
+    "rollup-plugin-multi-entry": "^2.1.0",
+    "rollup-plugin-node-resolve": "^4.2.4",
+    "rollup-plugin-terser": "^4.0.4",
+    "serve": "^10.1.1",
+    "workbox-build": "^4.3.1"
   }
 }

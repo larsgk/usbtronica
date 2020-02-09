@@ -1,15 +1,13 @@
 // @ts-check
-import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import { repeat } from 'https://unpkg.com/lit-html@0.13.0/directives/repeat.js?module';
-
-import {MatButton} from '../local_modules/mat-button/mat-button.js';
-import {SampleVisualizer} from '../local_modules/sample-visualizer/sample-visualizer.js';
+import { html, LitElement } from 'lit-element';
 
 import {AudioUtils} from '../local_modules/audio-utils/audio-utils.js';
-
 import {Controllers} from '../local_modules/instrument-control/instrument-control.js';
 import { MIDI_MSG_TYPE_NAME, MIDI_MSG_TYPE } from '../local_modules/instrument-control/defs.js';
-import { ControllerSettings } from '../local_modules/controller-settings/controller-settings.js';
+
+import '../local_modules/controller-settings/controller-settings.js';
+import '../local_modules/mat-button/mat-button.js';
+import { SampleVisualizer } from '../local_modules/sample-visualizer/sample-visualizer.js';
 
 
 export class MainApp extends LitElement {
@@ -17,7 +15,7 @@ export class MainApp extends LitElement {
   constructor() {
     super();
 
-    // Bind all callbacks 
+    // Bind all callbacks
     this._doScanForEmpiriKit = this._doScanForEmpiriKit.bind(this);
     this._doScanForThingy52 = this._doScanForThingy52.bind(this);
     this._recordToggle = this._recordToggle.bind(this);
@@ -34,7 +32,7 @@ export class MainApp extends LitElement {
       controller.addEventListener('midi-event', (e) => {
         const msg = e.detail.data;
         console.log('midi-event', MIDI_MSG_TYPE_NAME[msg.type], msg);
-        
+
         if(msg.type === MIDI_MSG_TYPE.NOTE_ON) {
           AudioUtils.playEffectNote(this.lastRecording, Math.pow(toneDiff, msg.note-60), msg.note, msg.velocity);
         } else if(msg.type === MIDI_MSG_TYPE.NOTE_OFF) {
@@ -45,25 +43,12 @@ export class MainApp extends LitElement {
 
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    requestAnimationFrame(_ => {
-      this._initialize()
-    });
-  }
-
   static get properties() {
     return {
       isRecording: {
         type: Boolean
       }
     }
-  }
-
-  
-
-  _initialize() {
-    this._micSignal =  this.shadowRoot.getElementById('micSignal');
   }
 
   _initRecording() {
@@ -84,7 +69,7 @@ export class MainApp extends LitElement {
           this.lastRecording = await AudioUtils.convertBlobToAudioBuffer(blob);
           this.isRecording = false;
         }
-      
+
         this.mediaRecorder.ondataavailable = (e) => {
           console.log(e.data);
           chunks.push(e.data);
@@ -119,7 +104,7 @@ export class MainApp extends LitElement {
 
   set lastRecording(val) {
     this._lastRecording = val;
-     this.shadowRoot.getElementById('lastRec').data = val;
+    this._lastRec.data = val;
   }
 
   _visualize(stream) {
@@ -251,12 +236,20 @@ export class MainApp extends LitElement {
       const exportElement = document.createElement('a');
       exportElement.download = `usbtronica-${Date.now()}.webm`;
       exportElement.href = URL.createObjectURL(this.lastRecordingBlob);
-      exportElement.click();      
+      exportElement.click();
     }
   }
 
   _playActiveSample() {
     AudioUtils.playSample(this.lastRecording);
+  }
+
+  firstUpdated() {
+    /** @type {SampleVisualizer} */
+    this._micSignal = this.shadowRoot.querySelector('#micSignal');
+
+    /** @type {SampleVisualizer} */
+    this._lastRec = this.shadowRoot.querySelector('#lastRec');
   }
 }
 

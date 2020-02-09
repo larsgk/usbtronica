@@ -4,19 +4,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="./assets/images/favicon.ico">
     <link rel="manifest" href="./manifest.json">
-    <script type="module" src="src/main-app.js"></script>
+    <script src="./index.js"></script>
     <style>
+      @import './assets/fonts/fonts.css';
+
       html, body {
         margin:0;
         height: 100%;
         background-color: #d99449;
       }
-
-      @font-face {
-          font-family: Bitwise;
-          src: url('./src/bitwise.ttf');
-      }
-
     </style>
   </head>
   <body>
@@ -24,7 +20,7 @@
   </body>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js').then(function(reg) {
+      navigator.serviceWorker.register('./sw.js').then(function(reg) {
         scope:'/usbtronica/'
       });
     }

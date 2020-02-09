@@ -1,5 +1,5 @@
 // @ts-check
-import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import { html, LitElement } from 'lit-element';
 
 import {Controllers} from '../instrument-control/instrument-control.js';
 
@@ -19,7 +19,7 @@ export class ControllerSettings extends LitElement {
             controller.addEventListener('disconnect', this.onChange);
             controller.addEventListener('message', this.onChange);
             controller.addEventListener('midi-event', (e) => console.log('midi-event', e.detail));
-        }  
+        }
     }
 
     onChange(evt) {
@@ -47,6 +47,6 @@ export class ControllerSettings extends LitElement {
           </ul>
         `;
     }
-    
+
 }
 customElements.define('controller-settings', ControllerSettings);

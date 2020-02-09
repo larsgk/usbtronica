@@ -1,5 +1,5 @@
 // @ts-check
-import { html, LitElement } from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import { html, LitElement } from 'lit-element';
 
 // Default colors for the sample visualizer (red line on dark red background)
 const _defLineColor = 'rgb(255,20,20)';
@@ -23,12 +23,7 @@ export class SampleVisualizer extends LitElement {
     requestAnimationFrame(this._renderCanvas);
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    requestAnimationFrame(this._initialize.bind(this));
-  }
-
-  _initialize() {
+  firstUpdated() {
     this.canvas =  this.shadowRoot.getElementById("viz");
 
     // Grab the colors from the CSS Custom Properties, use the defaults if none are defined.
@@ -50,7 +45,7 @@ export class SampleVisualizer extends LitElement {
         requestAnimationFrame(this._renderCanvas);
       }
     });
-    
+
     // Observe one or multiple elements
     ro.observe( this.shadowRoot.getElementById('vizdiv'));
   }
@@ -89,39 +84,39 @@ export class SampleVisualizer extends LitElement {
       if(this._renderData.length < this._width * 4) {
         const step = this._width / this._renderData.length;
         let x = 0;
-  
+
         ctx.strokeStyle = this.lineColor;
         ctx.lineWidth = 3;
         ctx.beginPath();
-  
+
         for(let val of this._renderData) {
           if(x === 0) {
             ctx.moveTo(x, cy - amp * val);
           } else {
-            ctx.lineTo(x, cy - amp * val); 
+            ctx.lineTo(x, cy - amp * val);
           }
           x += step;
         }
-  
-        ctx.stroke();  
+
+        ctx.stroke();
       } else {
         // Optimized drawing for larger data sets.
         const step = Math.floor(this._renderData.length / this._width);
 
         ctx.fillStyle = this.lineColor;
-  
+
         for(let i=0; i < this._width; i++){
           let min = 1.0;
           let max = -1.0;
           for (let j=0; j<step; j++) {
-              const datum = this._renderData[(i*step)+j]; 
+              const datum = this._renderData[(i*step)+j];
               if (datum < min)
                   min = datum;
               if (datum > max)
                   max = datum;
           }
           ctx.fillRect(i,(1+min)*amp,1,Math.max(1,(max-min)*amp));
-        }  
+        }
       }
     }
   }
