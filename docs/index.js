@@ -298,7 +298,6 @@ const W="adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.pro
             <sample-visualizer id='micSignal' class='live'></sample-visualizer><br>
             Recording:
             <sample-visualizer id="lastRec" @click='${this._playActiveSample}'></sample-visualizer><br>
-            ...TODO future cool settings:
             <controller-settings></controller-settings>
           </div>
         </div>

@@ -47,7 +47,7 @@ export default {
             swDest: './docs/sw.js',
             globDirectory: './docs',
             globPatterns: [
-                "**/*.{js,html,json,png,ttf,css}"
+                "**/*.{js,html,json,png,ttf,css,ogg}"
             ],
             skipWaiting: true,
             ignoreURLParametersMatching: [/.*/],

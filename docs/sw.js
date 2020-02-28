@@ -22,6 +22,22 @@ workbox.core.skipWaiting();
  */
 self.__precacheManifest = [
   {
+    "url": "assets/audio/Nathalia1.ogg",
+    "revision": "4d05ec40ede4b5c66c3c38482a846603"
+  },
+  {
+    "url": "assets/audio/piano_c.ogg",
+    "revision": "7f104724f52afa87b8b731b386e810ee"
+  },
+  {
+    "url": "assets/audio/test.ogg",
+    "revision": "3b1e93b039c0cd6dfa1d647ae47fae94"
+  },
+  {
+    "url": "assets/audio/test1.ogg",
+    "revision": "22f2704f1a486bc5c92d0dbcd894d62a"
+  },
+  {
     "url": "assets/fonts/bitwise.ttf",
     "revision": "567860c5074f320995d5c58e1b4a3ec7"
   },
@@ -59,7 +75,7 @@ self.__precacheManifest = [
   },
   {
     "url": "index.js",
-    "revision": "3d05c347605b0855dd073f391bf0dbdf"
+    "revision": "2be51c49845377557b4f1dce795a497a"
   },
   {
     "url": "manifest.json",
