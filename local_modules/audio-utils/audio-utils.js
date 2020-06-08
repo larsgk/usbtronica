@@ -13,7 +13,8 @@ class _AudioUtils extends EventTarget {
 
     get ctx() {
         if(!this._audioCtx) {
-          this._audioCtx = new (AudioContext || webkitAudioContext)();
+            /** @type{AudioContext} */
+            this._audioCtx = new (AudioContext || webkitAudioContext)();
         }
 
         return this._audioCtx;
@@ -21,38 +22,35 @@ class _AudioUtils extends EventTarget {
 
     playEffectNote(sample, rate, note, velocity) {
         if(velocity === undefined) velocity = 0x7F;
-        const aCtx = this.ctx;
-        const src = aCtx.createBufferSource();
+        const src = this.ctx.createBufferSource();
         if(rate) {
           src.playbackRate.value = rate;
         }
         src.buffer = sample;
-    
-        const gainNode = aCtx.createGain();
-        gainNode.gain.value = velocity / 0x7F; 
-    
+
+        const gainNode = this.ctx.createGain();
+        gainNode.gain.value = velocity / 0x7F;
+
         src.connect(gainNode);
-        gainNode.connect(aCtx.destination);
-    
+        gainNode.connect(this.ctx.destination);
+
         src.start(0);
         this._notes[note] = src;
     }
-    
+
     stopNote(note) {
         let src = this._notes[note];
         if(src) {
             src.stop();
         }
     }
-    
+
     async convertBlobToAudioBuffer(blob) {
-        console.log(typeof blob);
-        const aCtx = this.ctx;
         var reader = new FileReader();
 
         return new Promise((resolve, reject) => {
-            reader.onload = () => {
-                aCtx.decodeAudioData(reader.result, buffer => {
+            reader.onloadend = () => {
+                this.ctx.decodeAudioData(reader.result, buffer => {
                     resolve(buffer);
                 });
             };
@@ -61,13 +59,11 @@ class _AudioUtils extends EventTarget {
     }
 
     async loadSample(url) {
-        const aCtx = this.ctx;
-    
         return new Promise((resolve, reject) => {
             fetch(url)
             .then(response => response.arrayBuffer())
             .then((data) => {
-                aCtx.decodeAudioData(data, buffer => {
+                this.ctx.decodeAudioData(data, buffer => {
                     resolve(buffer);
                 });
             });
@@ -75,14 +71,13 @@ class _AudioUtils extends EventTarget {
     }
 
     playSample(sample) {
-        const aCtx = this.ctx;
-        const src = aCtx.createBufferSource();
+        const src = this.ctx.createBufferSource();
         src.buffer = sample;
-        src.connect(aCtx.destination);
+        src.connect(this.ctx.destination);
         src.start(0);
       }
-    
-    
+
+
 }
 
 const _instance = new _AudioUtils();

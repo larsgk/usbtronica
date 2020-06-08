@@ -9,6 +9,8 @@ export class SampleVisualizer extends LitElement {
   constructor() {
       super();
       this._data = null;
+      this.left = -1;
+      this.right = -1;
 
       this._renderCanvas = this._renderCanvas.bind(this);
   }
@@ -20,6 +22,12 @@ export class SampleVisualizer extends LitElement {
   set data(val) {
     this._data = val;
     this._prepData();
+    requestAnimationFrame(this._renderCanvas);
+  }
+
+  showTrim(left, right) {
+    this.left = left;
+    this.right = right;
     requestAnimationFrame(this._renderCanvas);
   }
 
@@ -52,6 +60,8 @@ export class SampleVisualizer extends LitElement {
 
   _prepData() {
     if(this._data instanceof AudioBuffer) {
+      this.left = -1;
+      this.right = -1;
       this._renderData = this._data.getChannelData(0); // TBD: assume mono?
     } else if(this._data instanceof Float32Array) {
       this._renderData = this._data;
@@ -117,6 +127,12 @@ export class SampleVisualizer extends LitElement {
           }
           ctx.fillRect(i,(1+min)*amp,1,Math.max(1,(max-min)*amp));
         }
+      }
+
+      if (this.left >= 0 && this.left < this.right && this.right < this._renderData.length) {
+        const step = this._width / this._renderData.length;
+        ctx.fillStyle = '#FFFFFF20';
+        ctx.fillRect(step * this.left, 0, step * (this.right - this.left), this._height);
       }
     }
   }

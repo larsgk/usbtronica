@@ -22,12 +22,12 @@ export class MatButton extends LitElement {
             z-index: 0;
             padding: 0.7em 0.57em;
             box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
-            background-color:rgba(190,106,59, 1.0);
+            background-color: var(--background-color, darkgray);
             color: white;
           }
           .btn:hover {
             box-shadow: 0 3px 3px 0 rgba(0,0,0,0.14), 0 1px 7px 0 rgba(0,0,0,0.12), 0 3px 1px -1px rgba(0,0,0,0.2);
-            background-color:rgba(190,106,59, 0.8);
+            background-color: var(--background-color-hover, gray);
           }
         </style>
         <div class="btn">

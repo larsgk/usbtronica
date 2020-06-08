@@ -15,12 +15,8 @@ export class MainApp extends LitElement {
   constructor() {
     super();
 
-    // Bind all callbacks
-    this._doScanForEmpiriKit = this._doScanForEmpiriKit.bind(this);
-    this._doScanForThingy52 = this._doScanForThingy52.bind(this);
-    this._recordToggle = this._recordToggle.bind(this);
-    this._loadSound = this._loadSound.bind(this);
-    this._playActiveSample = this._playActiveSample.bind(this);
+    this.isRecording = false;
+    this.isTrimming = false;
 
     // To emulate an instrument playing with 1/2 tone differences, we need this factor on the playback rate between each key:
     const toneDiff = Math.pow(2, 1/12);
@@ -34,7 +30,7 @@ export class MainApp extends LitElement {
         console.log('midi-event', MIDI_MSG_TYPE_NAME[msg.type], msg);
 
         if(msg.type === MIDI_MSG_TYPE.NOTE_ON) {
-          AudioUtils.playEffectNote(this.lastRecording, Math.pow(toneDiff, msg.note-60), msg.note, msg.velocity);
+          AudioUtils.playEffectNote(this._sample, Math.pow(toneDiff, msg.note-60), msg.note, msg.velocity);
         } else if(msg.type === MIDI_MSG_TYPE.NOTE_OFF) {
           AudioUtils.stopNote(msg.note);
         }
@@ -45,9 +41,8 @@ export class MainApp extends LitElement {
 
   static get properties() {
     return {
-      isRecording: {
-        type: Boolean
-      }
+      isRecording: { type: Boolean },
+      isTrimming: { type: Boolean }
     }
   }
 
@@ -105,6 +100,9 @@ export class MainApp extends LitElement {
   set lastRecording(val) {
     this._lastRecording = val;
     this._lastRec.data = val;
+
+    // Start by using the full sound (no trimming)
+    this._sample = val;
   }
 
   _visualize(stream) {
@@ -151,8 +149,8 @@ export class MainApp extends LitElement {
         }
 
         .live {
-          --line-color:#20ff20;
-          --background-color:#001000;
+          --line-color: #20ff20;
+          --background-color: #001000;
         }
 
         .flex-container {
@@ -180,6 +178,13 @@ export class MainApp extends LitElement {
 
         mat-button {
           flex-grow: 1;
+          --background-color: #be6a3b;
+          --background-color-hover: #e48149;
+        }
+
+        mat-button[active] {
+          --background-color: #be3b47;
+          --background-color-hover: #e14b59;
         }
 
       </style>
@@ -188,17 +193,22 @@ export class MainApp extends LitElement {
           <div class="col">
             <h1>usBTronica</h1>
             <div class="row">
-              <mat-button @click='${ this._enableAudio }'>Start audio</mat-button>
-              <mat-button id="btnrecord" @click='${ this._recordToggle }'>${this.isRecording ? "Stop recording" : "Start recording"}</mat-button>
-              <mat-button @click='${ this._doScanForEmpiriKit }'>Scan for empiriKit</mat-button>
-              <mat-button @click='${ this._doScanForThingy52 }'>Scan for Thingy52</mat-button>
-              <mat-button @click='${ this._loadSound }'>Load piano sound</mat-button>
-              <mat-button .hidden=${ !this._lastRecording } @click='${ this._exportSound }'>${  this._lastRecording ? "Export Recorded Sound" : "..." }</mat-button>
+              <mat-button @click=${this._enableAudio}>Start audio</mat-button>
+              <mat-button id="btnrecord" ?active=${this.isRecording} @click=${this._recordToggle}>
+                ${this.isRecording ? "Stop recording" : "Start recording"}
+              </mat-button>
+              <mat-button @click=${this._doScanForEmpiriKit}>Scan for empiriKit</mat-button>
+              <mat-button @click=${this._doScanForThingy52}>Scan for Thingy52</mat-button>
+              <mat-button @click=${this._loadSound}>Load piano sound</mat-button>
+              <mat-button .hidden=${!this.lastRecordingBlob} @click=${this._exportSound}>Export Recording"</mat-button>
+              <mat-button .hidden=${!this._lastRecording} ?active=${this.isTrimming} @click=${this._autoTrim}>
+                ${this.isTrimming ? "Select in recording" : "Auto trim"}
+              </mat-button>
             </div><br>
             Live:
             <sample-visualizer id='micSignal' class='live'></sample-visualizer><br>
             Recording:
-            <sample-visualizer id="lastRec" @click='${ this._playActiveSample }'></sample-visualizer><br>
+            <sample-visualizer id="lastRec" @click=${this._clickInSample}></sample-visualizer><br>
             <controller-settings></controller-settings>
           </div>
         </div>
@@ -228,10 +238,12 @@ export class MainApp extends LitElement {
 
   async _loadSound(evt) {
     this.lastRecording = await AudioUtils.loadSample('./assets/audio/piano_c.ogg');
+    this.lastRecordingBlob = undefined;
+    this.requestUpdate();
   }
 
   _exportSound() {
-    if (this._lastRecording) {
+    if (this.lastRecordingBlob) {
       const exportElement = document.createElement('a');
       exportElement.download = `usbtronica-${Date.now()}.webm`;
       exportElement.href = URL.createObjectURL(this.lastRecordingBlob);
@@ -239,8 +251,79 @@ export class MainApp extends LitElement {
     }
   }
 
-  _playActiveSample() {
-    AudioUtils.playSample(this.lastRecording);
+  _autoTrim() {
+    if (!this._lastRecording) return;
+
+    this.isTrimming = !this.isTrimming;
+
+    if (!this.isTrimming) {
+      // Clicking button while trimming reverts to full sample
+      this._sample = this.lastRecording;
+      this._lastRec.showTrim(-1. -1);
+    }
+
+  }
+
+  _clickInSample(evt) {
+    if (!this.lastRecording) return;
+
+    if (this.isTrimming) {
+      /** @type{SampleVisualizer} */
+      const el = evt.target;
+      const rect = el.getBoundingClientRect();
+      const fraction = (evt.clientX - rect.left) / rect.width;
+
+      /** @type{Float32Array} */
+      const sampleData = this.lastRecording.getChannelData(0);
+
+      // Find spot in lastRecording and go left & right to trim (<HOLD> samples < Math.abs(<threshold>))
+      const THRESHOLD = 0.002;
+      const HOLD = 32;
+      const startPos = Math.round(sampleData.length * fraction);
+
+
+      // Left
+      let count = 0;
+      let left = startPos;
+      while (count < HOLD && left > 0) {
+        if (Math.abs(sampleData[left]) < THRESHOLD) {
+          count++;
+        } else {
+          count = 0;
+        }
+        left--;
+      }
+
+      // Right
+      count = 0;
+      let right = startPos;
+      while (count < HOLD && right < sampleData.length-1) {
+        if (Math.abs(sampleData[right]) < THRESHOLD) {
+          count++;
+        } else {
+          count = 0;
+        }
+        right++;
+      }
+
+      console.log(`Trimming (from ${sampleData.length} samples): [${left}; ${right}]`);
+
+      this._lastRec.showTrim(left, right);
+
+      // copy trimmed data to playback sample buffer
+      const aCtx = AudioUtils.ctx;
+      const newBuffer = aCtx.createBuffer(1, right - left, this.lastRecording.sampleRate);
+      const tmpArray = new Float32Array(right - left);
+      this.lastRecording.copyFromChannel(tmpArray, 0, left);
+      newBuffer.copyToChannel(tmpArray, 0, 0);
+      this._sample = newBuffer;
+
+      this.isTrimming = false;
+
+      // Find area
+    } else {
+      AudioUtils.playSample(this._sample);
+    }
   }
 
   firstUpdated() {
