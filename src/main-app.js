@@ -66,7 +66,6 @@ export class MainApp extends LitElement {
         }
 
         this.mediaRecorder.ondataavailable = (e) => {
-          console.log(e.data);
           chunks.push(e.data);
         }
       }
@@ -82,7 +81,6 @@ export class MainApp extends LitElement {
   }
 
   _recordToggle() {
-    console.log("_recordToggle", this.isRecording, this.mediaRecorder);
     if(this.mediaRecorder) {
       if(this.isRecording) {
         this.mediaRecorder.stop();
@@ -200,7 +198,7 @@ export class MainApp extends LitElement {
               <mat-button @click=${this._doScanForEmpiriKit}>Scan for empiriKit</mat-button>
               <mat-button @click=${this._doScanForThingy52}>Scan for Thingy52</mat-button>
               <mat-button @click=${this._loadSound}>Load piano sound</mat-button>
-              <mat-button .hidden=${!this.lastRecordingBlob} @click=${this._exportSound}>Export Recording"</mat-button>
+              <mat-button .hidden=${!this.lastRecordingBlob} @click=${this._exportSound}>Export Recording</mat-button>
               <mat-button .hidden=${!this._lastRecording} ?active=${this.isTrimming} @click=${this._autoTrim}>
                 ${this.isTrimming ? "Select in recording" : "Auto trim"}
               </mat-button>
@@ -277,10 +275,9 @@ export class MainApp extends LitElement {
       const sampleData = this.lastRecording.getChannelData(0);
 
       // Find spot in lastRecording and go left & right to trim (<HOLD> samples < Math.abs(<threshold>))
-      const THRESHOLD = 0.002;
+      const THRESHOLD = 0.002;  // TODO: Better support for noisy environments ;)
       const HOLD = 32;
       const startPos = Math.round(sampleData.length * fraction);
-
 
       // Left
       let count = 0;
@@ -305,8 +302,6 @@ export class MainApp extends LitElement {
         }
         right++;
       }
-
-      console.log(`Trimming (from ${sampleData.length} samples): [${left}; ${right}]`);
 
       this._lastRec.showTrim(left, right);
 

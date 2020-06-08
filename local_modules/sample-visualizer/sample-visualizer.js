@@ -44,9 +44,6 @@ export class SampleVisualizer extends LitElement {
     const ro = new ResizeObserver( entries => {
       for (let entry of entries) {
         const cr = entry.contentRect;
-        // console.log('Element:', entry.target);
-        // console.log(`Element size: ${cr.width}px x ${cr.height}px`);
-        // console.log(`Element padding: ${cr.top}px ; ${cr.left}px`);
         this._width = Math.ceil(cr.width);
         this._height = Math.ceil(cr.height);
         this.requestUpdate();
